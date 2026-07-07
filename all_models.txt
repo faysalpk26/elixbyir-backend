@@ -1,0 +1,1579 @@
+
+--- adminModel.js ---
+const mongoose = require('mongoose');
+
+const adminSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        enum: ['admin', 'super_admin'],
+        default: 'admin'
+    },
+    lastLogin: {
+        type: Date,
+        default: null
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+module.exports = mongoose.model("Admin" , adminSchema)
+
+--- blogCategoryModel.js ---
+const { default: mongoose } = require("mongoose");
+
+//blog category schema
+const blogCategorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    unique: true,
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  image: {
+    type: String,
+    default: "",
+  },
+  icon: {
+    type: String,
+    default: "",
+  },
+  order: {
+    type: Number,
+    default: 0,
+  },
+  parentCategory: {
+    type: String,
+    default: null,
+  },
+  metaTitle: {
+    type: String,
+    default: "",
+  },
+  metaDescription: {
+    type: String,
+    default: "",
+  },
+  blogCount: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Auto-update timestamp on save
+blogCategorySchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+module.exports = mongoose.model("BlogCategory", blogCategorySchema);
+
+--- blogPostModel.js ---
+const mongoose = require("mongoose");
+
+const BlogPostSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
+    shortDescription: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    author: {
+      name: {
+        type: String,
+        required: true,
+      },
+      profileImage: {
+        type: String,
+      },
+      bio: {
+        type: String,
+      },
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+
+    tags: {
+      type: [String],
+      default: [],
+    },
+
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    trending: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["draft", "published", "archived"],
+      default: "draft",
+    },
+    
+    available: {
+      type: Boolean,
+      default: true,
+    },
+    publishedAt: {
+      type: Date,
+    },
+
+    readTime: {
+      type: Number,
+    },
+
+    likes: {
+      count: {
+        type: Number,
+        default: 0,
+      },
+      users: [
+        {
+          type: Number,
+        },
+      ],
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+
+    comments: [
+      {
+        _id: {
+          type: mongoose.Schema.Types.ObjectId,
+          default: () => new mongoose.Types.ObjectId(),
+        },
+        user: {
+          type: Object,
+          required: true,
+        },
+        text: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        replies: [
+          {
+            _id: {
+              type: mongoose.Schema.Types.ObjectId,
+              default: () => new mongoose.Types.ObjectId(),
+            },
+            user: {
+              type: Object,
+              required: true,
+            },
+            text: {
+              type: String,
+              required: true,
+              trim: true,
+            },
+            createdAt: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    commentsEnabled: {
+      type: Boolean,
+      default: true,
+    },
+
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: () => new mongoose.Types.ObjectId(),
+      unique: true,
+    },
+
+    metaTitle: {
+      type: String,
+    },
+    metaDescription: {
+      type: String,
+    },
+
+    metaKeywords: [String],
+  },
+  {
+    timestamps: true,
+  },
+);
+
+module.exports = mongoose.model("BlogPost", BlogPostSchema);
+
+--- cartModel.js ---
+const mongoose = require("mongoose");
+
+const cartSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  items: [
+    {
+      productId: {
+        type: Number,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+      price: {
+        type: Number,
+        required: true,
+      },
+      selectedOptions: {
+        type: Object,
+        default: {},
+      },
+      variantHash: {
+        type: String,
+        default: "",
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+module.exports = mongoose.model("Cart", cartSchema);
+
+--- categoryModel.js ---
+const { default: mongoose } = require("mongoose");
+
+// Category Schema
+const categorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    unique: true,
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  image: {
+    type: String,
+    default: "",
+  },
+  icon: {
+    type: String,
+    default: "",
+  },
+  order: {
+    type: Number,
+    default: 0,
+  },
+  parentCategory: {
+    type: String,
+    default: null,
+  },
+  metaTitle: {
+    type: String,
+    default: "",
+  },
+  metaDescription: {
+    type: String,
+    default: "",
+  },
+  productCount: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Auto-update timestamp on save
+categorySchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+module.exports = mongoose.model("Category", categorySchema);
+--- contactModel.js ---
+const mongoose = require('mongoose');
+
+const contactSchema = new mongoose.Schema({
+    name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true,
+  },
+  subject: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  message: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  inquiryType: {
+    type: String,
+    enum: ["general", "support", "business", "feedback"],
+    default: "general",
+  },
+  status: {
+    type: String,
+    enum: ["new", "read", "replied", "resolved"],
+    default: "new",
+  },
+  ipAddress: {
+    type: String,
+    default: "",
+  },
+  userAgent: {
+    type: String,
+    default: "",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  repliedAt: {
+    type: Date,
+  },
+});
+
+module.exports = mongoose.model("Contact" , contactSchema)
+
+
+
+--- newsletterModel.js ---
+const mongoose = require('mongoose');
+// Newsletter Schema
+const newsletterSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  name: {
+    type: String,
+    default: "",
+    trim: true,
+  },
+  status: {
+    type: String,
+    enum: ["active", "unsubscribed", "pending"],
+    default: "pending",
+  },
+  subscriptionSource: {
+    type: String,
+    // enum: ["website", "checkout", "popup", "social"],
+    default: "website",
+  },
+  preferences: {
+    promotions: {
+      type: Boolean,
+      default: true,
+    },
+    newProducts: {
+      type: Boolean,
+      default: true,
+    },
+    styleGuides: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  ipAddress: {
+    type: String,
+    default: "",
+  },
+  userAgent: {
+    type: String,
+    default: "",
+  },
+  subscribedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  lastEmailSent: {
+    type: Date,
+  },
+  unsubscribedAt: {
+    type: Date,
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+  },
+});
+
+module.exports = mongoose.model('Newsletter', newsletterSchema);
+--- notificationsModel.js ---
+// backend/models/notificationModel.js
+const mongoose = require("mongoose");
+
+const NotificationSchema = new mongoose.Schema(
+  {
+    type: { type: String, required: true }, // "order.created"
+    title: { type: String, required: true },
+    message: { type: String },
+
+    severity: {
+      type: String,
+      enum: ["info", "high", "critical"],
+      default: "info",
+    },
+
+    actor: {
+      kind: { type: String, enum: ["staff", "user", "anonymous"], default: "anonymous" },
+      id: String,
+      email: String,
+    },
+
+    target: {
+      kind: String, // "order", "product", "blog"
+      id: String,
+      label: String,
+    },
+
+    audience: {
+      permissions: [String], // who receives it
+    },
+
+    readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "StaffUser" }],
+  },
+  { timestamps: true }
+);
+
+
+NotificationSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 * 30 }
+);
+
+
+module.exports = mongoose.model("Notification", NotificationSchema);
+
+--- orderModel.js ---
+const mongoose = require("mongoose");
+
+const orderSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  orderId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  stripePaymentIntentId: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  items: [
+    {
+      productId: Number,
+      name: String,
+      price: Number,
+      quantity: Number,
+      image: String,
+      selectedOptions: {
+        type: Object,
+        default: {},
+      },
+      variantHash: {
+        type: String,
+        default: "",
+      },
+    },
+  ],
+  shippingAddress: {
+    name: String,
+    email: String,
+    phone: String,
+    address: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+  },
+  billingAddress: {
+    name: String,
+    email: String,
+    phone: String,
+    address: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+  },
+  amount: {
+    subtotal: Number,
+    shipping: Number,
+    tax: Number,
+    discount: Number,
+    total: Number,
+  },
+  status: {
+    type: String,
+    enum: [
+      "pending",
+      "confirmed",
+      "processing",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ],
+    default: "pending",
+  },
+
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "succeeded", "failed", "cancelled"],
+    default: "pending",
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["stripe", "paypal", "cod", "bank_transfer"],
+    default: "stripe",
+  },
+  paymentMeta: {
+    bankTransferInstructions: { type: String, default: "" },
+    bankTransferReference: { type: String, default: "" },
+
+    receiptUploadToken: { type: String, default: "" },
+    receiptImageUrl: { type: String, default: "" },
+    receiptImagePublicId: { type: String, default: "" },
+    receiptUploadedAt: { type: Date, default: null },
+
+    receiptVerificationNote: { type: String, default: "" },
+    receiptVerifiedAt: { type: Date, default: null },
+    receiptVerifiedBy: {
+      id: { type: String, default: "" },
+      email: { type: String, default: "" },
+      name: { type: String, default: "" },
+    },
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+module.exports = mongoose.model("Order", orderSchema);
+
+--- productModel.js ---
+const { default: mongoose } = require("mongoose");
+
+// Enhanced Schema for creating products with all e-commerce features
+const productSchema = new mongoose.Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    // Basic Information
+    name: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    brand: {
+      type: String,
+      default: "",
+    },
+    sku: {
+      type: String,
+      default: "",
+    },
+    description: {
+      type: String,
+      default: "",
+    },
+    short_description: {
+      type: String,
+      default: "",
+    },
+
+    // Images
+    image: {
+      type: String,
+      required: true,
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+
+    // Pricing
+    new_price: {
+      type: Number,
+      required: true,
+    },
+    old_price: {
+      type: Number,
+      required: true,
+    },
+    discount_type: {
+      type: String,
+      enum: ["percentage", "fixed"],
+      default: "percentage",
+    },
+    discount_value: {
+      type: Number,
+      default: 0,
+    },
+    sale_start_date: {
+      type: Date,
+    },
+    sale_end_date: {
+      type: Date,
+    },
+
+    // Product Details
+    features: {
+      type: [String],
+      default: [],
+    },
+    specifications: [
+      {
+        key: String,
+        value: String,
+      },
+    ],
+    materials: {
+      type: String,
+      default: "",
+    },
+    care_instructions: {
+      type: String,
+      default: "",
+    },
+    size_chart: {
+      type: String,
+      default: "",
+    },
+    colors: {
+      type: [String],
+      default: [],
+    },
+    sizes: {
+      type: [String],
+      default: [],
+    },
+    weight: {
+      type: Number,
+      default: 0,
+    },
+    dimensions: {
+      length: {
+        type: Number,
+        default: 0,
+      },
+      width: {
+        type: Number,
+        default: 0,
+      },
+      height: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    // Inventory
+    stock_quantity: {
+      type: Number,
+      default: 0,
+    },
+    low_stock_threshold: {
+      type: Number,
+      default: 10,
+    },
+
+    // SEO & Meta Data
+    meta_title: {
+      type: String,
+      default: "",
+    },
+    meta_description: {
+      type: String,
+      default: "",
+    },
+    meta_keywords: {
+      type: String,
+      default: "",
+    },
+    slug: {
+      type: String,
+      default: "",
+    },
+
+    // Additional Fields
+    tags: {
+      type: [String],
+      default: [],
+    },
+    related_products: {
+      type: [Number],
+      default: [],
+    },
+    shipping_class: {
+      type: String,
+      enum: ["standard", "express", "overnight", "free"],
+      default: "standard",
+    },
+    status: {
+      type: String,
+      enum: ["draft", "published", "archived"],
+      default: "draft",
+    },
+
+    // System Fields
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    available: {
+      type: Boolean,
+      default: true,
+    },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    allowReviews: {
+      type: Boolean,
+      default: true,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    sales_count: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
+    timestamps: true, // This adds createdAt and updatedAt automatically
+  },
+);
+
+// Add virtual for conversion rate calculation
+productSchema.virtual("conversion_rate").get(function () {
+  return this.views > 0
+    ? ((this.sales_count / this.views) * 100).toFixed(2)
+    : 0;
+});
+
+// Auto-generate SKU and slug if not provided
+productSchema.pre("save", function (next) {
+  if (!this.sku || this.sku === "") {
+    this.sku = `${this.category.substring(0, 3).toUpperCase()}-${this.id}`;
+  }
+
+  if (!this.slug || this.slug === "") {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+  }
+
+  next();
+});
+
+// Ensure virtuals are included in JSON output
+productSchema.set("toJSON", { virtuals: true });
+
+// Shop/query performance indexes
+productSchema.index({
+  available: 1,
+  status: 1,
+  category: 1,
+  brand: 1,
+  featured: 1,
+  new_price: 1,
+  date: -1,
+});
+productSchema.index({ available: 1, status: 1, new_price: 1 });
+productSchema.index({ available: 1, status: 1, date: -1 });
+productSchema.index({ available: 1, status: 1, stock_quantity: 1 });
+productSchema.index({ category: 1, available: 1, status: 1 });
+productSchema.index({ brand: 1, available: 1, status: 1 });
+productSchema.index(
+  {
+    name: "text",
+    description: "text",
+    category: "text",
+    brand: "text",
+    tags: "text",
+  },
+  {
+    name: "product_text_search",
+    weights: {
+      name: 10,
+      category: 5,
+      brand: 4,
+      description: 2,
+      tags: 1,
+    },
+  },
+);
+
+module.exports = mongoose.model("Product", productSchema);
+
+--- productReviewModel.js ---
+const mongoose = require("mongoose");
+
+const productReviewSchema = new mongoose.Schema(
+  {
+    productId: {
+      type: Number,
+      required: true,
+      index: true,
+    },
+    userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    userName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 80,
+    },
+    userEmail: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
+    userAvatar: {
+      type: String,
+      default: "",
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    title: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 120,
+    },
+    comment: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 1200,
+    },
+    isVerifiedPurchase: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["published", "hidden"],
+      default: "published",
+    },
+  },
+  { timestamps: true },
+);
+
+productReviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
+productReviewSchema.index({ productId: 1, status: 1, createdAt: -1 });
+
+module.exports = mongoose.model("ProductReview", productReviewSchema);
+
+--- promoCodeModel.js ---
+const { default: mongoose } = require("mongoose");
+
+// Promo Code Schema
+const promoCodeSchema = new mongoose.Schema({
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+    uppercase: true,
+    trim: true,
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  discountType: {
+    type: String,
+    enum: ["percentage", "fixed"],
+    default: "percentage",
+  },
+  discountValue: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  minPurchaseAmount: {
+    type: Number,
+    default: 0,
+  },
+  maxDiscountAmount: {
+    type: Number,
+    default: null, // null means no limit
+  },
+  usageLimit: {
+    type: Number,
+    default: null, // null means unlimited
+  },
+  usageCount: {
+    type: Number,
+    default: 0,
+  },
+  usagePerUser: {
+    type: Number,
+    default: 1, // How many times one user can use
+  },
+  validFrom: {
+    type: Date,
+    required: true,
+  },
+  validUntil: {
+    type: Date,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  applicableCategories: [
+    {
+      type: String,
+    },
+  ],
+  excludedProducts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
+  userRestrictions: {
+    newUsersOnly: {
+      type: Boolean,
+      default: false,
+    },
+    specificUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+  },
+  usedBy: [
+    {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      usedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      orderAmount: Number,
+    },
+  ],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Index for faster queries
+// promoCodeSchema.index({ code: 1 });
+// promoCodeSchema.index({ isActive: 1, validFrom: 1, validUntil: 1 });
+
+// Virtual for checking if code is expired
+promoCodeSchema.virtual("isExpired").get(function () {
+  return new Date() > this.validUntil;
+});
+
+// Virtual for checking if code is valid now
+promoCodeSchema.virtual("isValidNow").get(function () {
+  const now = new Date();
+  return this.isActive && now >= this.validFrom && now <= this.validUntil;
+});
+
+// Pre-save middleware to update updatedAt
+promoCodeSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+module.exports = mongoose.model("PromoCode", promoCodeSchema);
+--- roleModel.js ---
+// models/Role.js
+const mongoose = require('mongoose');
+
+const RoleSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true }, 
+  permissions: [{ type: String }],
+  description: { type: String },
+  active: { type: Boolean, default: true },
+
+  protected: { type: Boolean, default: false }, // true for super_admin role
+}, { timestamps: true });
+
+module.exports = mongoose.models.Role || mongoose.model('Role', RoleSchema);
+
+--- saleModel.js ---
+const mongoose = require("mongoose");
+
+const saleSchema = new mongoose.Schema({
+  product_id: {
+    type: Number,
+    required: true,
+  },
+  product_name: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    default: 1,
+  },
+  total_amount: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  month: {
+    type: Number,
+    required: true,
+  },
+  year: {
+    type: Number,
+    required: true,
+  },
+});
+
+module.exports = mongoose.model("Sale", saleSchema);
+
+--- settingsModel.js ---
+// File: models/Settings.js
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+const PaymentMethodSchema = new Schema(
+  {
+    enabled: { type: Boolean, default: false },
+    label: { type: String, default: "" },
+    instructions: { type: String, default: "" }, // used by bank transfer
+  },
+  { _id: false },
+);
+
+const StripeCredentialsSchema = new Schema(
+  {
+    publishableKey: { type: String, default: "" },
+    secretKey: { type: String, default: "" }, // encrypted string
+    webhookSecret: { type: String, default: "" }, // encrypted string
+  },
+  { _id: false },
+);
+
+const PaypalCredentialsSchema = new Schema(
+  {
+    clientId: { type: String, default: "" },
+    clientSecret: { type: String, default: "" }, // encrypted string
+  },
+  { _id: false },
+);
+
+const HoursSchema = new Schema(
+  {
+    day: { type: String, default: "weekday" }, // e.g. 'weekdays'
+    open: { type: String, default: "09:00" }, // '09:00'
+    close: { type: String, default: "18:00" }, // '18:00'
+    closed: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+
+const ImageRef = new Schema(
+  {
+    public_id: { type: String, default: "" },
+    url: { type: String, default: "" },
+    alt: { type: String, default: "" },
+    uploadedAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
+
+const hexColorField = (defaultValue) => ({
+  type: String,
+  trim: true,
+  default: defaultValue,
+  match: [/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Invalid hex color value"],
+});
+
+const ThemeSettingsSchema = new Schema(
+  {
+    brand: {
+      primary: hexColorField("#ec4899"),
+      primaryHover: hexColorField("#db2777"),
+      secondary: hexColorField("#f43f5e"),
+      accent: hexColorField("#be185d"),
+      gradientFrom: hexColorField("#ec4899"),
+      gradientTo: hexColorField("#f43f5e"),
+    },
+    text: {
+      heading: hexColorField("#111827"),
+      body: hexColorField("#374151"),
+      muted: hexColorField("#6b7280"),
+      onPrimary: hexColorField("#ffffff"),
+    },
+    background: {
+      page: hexColorField("#fff7fb"),
+      section: hexColorField("#ffffff"),
+      card: hexColorField("#ffffff"),
+    },
+    border: {
+      default: hexColorField("#e5e7eb"),
+    },
+    buttonPrimary: {
+      bg: hexColorField("#ec4899"),
+      hover: hexColorField("#db2777"),
+      text: hexColorField("#ffffff"),
+    },
+    buttonSecondary: {
+      bg: hexColorField("#ffffff"),
+      hover: hexColorField("#fdf2f8"),
+      text: hexColorField("#be185d"),
+      border: hexColorField("#f9a8d4"),
+    },
+    state: {
+      success: hexColorField("#10b981"),
+      warning: hexColorField("#f59e0b"),
+      error: hexColorField("#ef4444"),
+      info: hexColorField("#3b82f6"),
+    },
+  },
+  { _id: false },
+);
+
+const SettingsSchema = new Schema(
+  {
+    generalSettings: {
+      branding: {
+        siteLogo: {
+          type: ImageRef,
+          default: () => ({
+            public_id: "default_site_logo",
+            url: "https://placehold.co/400x100/FFB6C1/FFFFFF?text=Pink+Dreams",
+            alt: "Pink Dreams Logo",
+            uploadedAt: new Date(),
+          }),
+        },
+        adminLogo: {
+          type: ImageRef,
+          default: () => ({
+            public_id: "default_admin_logo",
+            url: "https://placehold.co/200x60/FFB6C1/FFFFFF?text=Admin+Logo",
+            alt: "Admin Logo",
+            uploadedAt: new Date(),
+          }),
+        },
+        favicon: {
+          type: ImageRef,
+          default: () => ({
+            public_id: "default_favicon",
+            url: "https://placehold.co/32x32/FFB6C1/FFFFFF?text=P",
+            alt: "Favicon",
+            uploadedAt: new Date(),
+          }),
+        },
+      },
+      seo: {
+        siteTitle: {
+          type: String,
+          default: "Pink Dreams - Premium Fashion Store",
+        },
+        siteDescription: {
+          type: String,
+          default:
+            "Discover the latest trends in fashion. Shop premium clothing, accessories, and more at Pink Dreams.",
+        },
+        // add other SEO fields (robots, default meta tags) as needed
+      },
+    },
+
+    contact: {
+      email: { type: String, trim: true, default: "hello@pinkdreams.com" },
+      phone: { type: String, trim: true, default: "+1 (555) 123-4567" },
+      address: {
+        type: String,
+        trim: true,
+        default: "123 Fashion Avenue, Suite 456, New York, NY 10001, United States",
+      },
+
+      social: {
+        instagram: {
+          type: String,
+          default: "https://instagram.com/pinkdreams",
+        },
+        facebook: { type: String, default: "https://facebook.com/pinkdreams" },
+        twitter: { type: String, default: "https://twitter.com/pinkdreams" },
+        youtube: { type: String, default: "https://youtube.com/pinkdreams" },
+      },
+
+      // business hours as three logical entries: weekdays, saturday, sunday
+      hours: {
+        weekdays: {
+          type: HoursSchema,
+          default: () => ({
+            day: "weekdays",
+            open: "09:00",
+            close: "18:00",
+            closed: false,
+          }),
+        },
+        saturday: {
+          type: HoursSchema,
+          default: () => ({
+            day: "saturday",
+            open: "10:00",
+            close: "16:00",
+            closed: false,
+          }),
+        },
+        sunday: {
+          type: HoursSchema,
+          default: () => ({
+            day: "sunday",
+            open: "00:00",
+            close: "00:00",
+            closed: true,
+          }),
+        },
+      },
+    },
+
+    email: {
+      from: { type: String, default: "noreply@pinkdreams.com" }, // visible sender address
+      admin: { type: String, default: "admin@pinkdreams.com" }, // admin notification address
+    },
+    allowGuestCheckout: { type: Boolean, default: true },
+    themeSettings: {
+      type: ThemeSettingsSchema,
+      default: () => ({}),
+    },
+    
+    paymentSettings: {
+      methods: {
+        stripe: {
+          type: PaymentMethodSchema,
+          default: () => ({ enabled: true, label: "Card (Stripe)" }),
+        },
+        paypal: {
+          type: PaymentMethodSchema,
+          default: () => ({ enabled: true, label: "PayPal" }),
+        },
+        cod: {
+          type: PaymentMethodSchema,
+          default: () => ({ enabled: false, label: "Cash on Delivery" }),
+        },
+        bankTransfer: {
+          type: PaymentMethodSchema,
+          default: () => ({
+            enabled: false,
+            label: "Bank Transfer",
+            instructions: "",
+          }),
+        },
+      },
+      credentials: {
+        stripe: {
+          type: StripeCredentialsSchema,
+          default: () => ({
+            publishableKey: "",
+            secretKey: "",
+            webhookSecret: "",
+          }),
+        },
+        paypal: {
+          type: PaypalCredentialsSchema,
+          default: () => ({ clientId: "", clientSecret: "" }),
+        },
+      },
+    },
+  },
+  { timestamps: true },
+);
+
+module.exports = mongoose.model("Settings", SettingsSchema);
+
+--- staffUsersModel.js ---
+// models/User.js (update your existing model)
+const mongoose = require('mongoose');
+
+const StaffUserSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String },
+  role: {type : String , required : true}, // updated
+  isProtected: { type: Boolean, default: false }, // protect this user (super admin)
+  tokenVersion: { type: Number, default: 0 }, // bump on role change to invalidate tokens
+  status: { type: String, enum: ['inactive','active'], default: 'active' },
+}, { timestamps: true });
+
+module.exports = mongoose.models.StaffUser || mongoose.model('StaffUser', StaffUserSchema);
+
+--- userModel.js ---
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
+  avatar: {
+    type: String,
+    default: "",
+  },
+  address: {
+    type: String,
+    default: "",
+    trim: true,
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now,
+  },
+  // Add these OAuth fields:
+  googleId: {
+    type: String,
+    sparse: true, // Allows multiple null values
+  },
+  facebookId: {
+    type: String,
+    sparse: true,
+  },
+  authProvider: {
+    type: String,
+    enum: ["local", "google", "facebook"],
+    default: "local",
+  },
+});
+
+module.exports = mongoose.model("User" , userSchema)
+
+
+
+--- wishlistModel.js ---
+const mongoose = require('mongoose');
+
+const wishlistSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+    },
+    items: [{
+        productId: {
+            type: Number,
+            required: true,
+        },
+        addedAt: {
+            type: Date,
+            default: Date.now
+        },
+        // Optional: Store product info at time of adding to wishlist
+        productSnapshot: {
+            name: String,
+            price: Number,
+            image: String,
+            category: String
+        }
+    }],
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+module.exports = mongoose.model("Wishlist", wishlistSchema);
+
+
+// Add these to your index.js file after your existing schemas and before app.listen()
+
+// Install required packages first:
+// npm install nodemailer
+// npm install dotenv (if not already installed)
+
+// const nodemailer = require('nodemailer');
+// require('dotenv').config();
+
+// Contact Form Schema

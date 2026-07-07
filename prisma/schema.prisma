@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String    @id @default(cuid()) @map("_id")
+  username  String    @unique
+  password  String
+  name      String
+  role      String    @default("admin")
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model BlogCategory {
+  id              String   @id @default(cuid()) @map("_id")
+  name            String   @unique
+  slug            String   @unique
+  description     String   @db.Text
+  isActive        Boolean  @default(true)
+  image           String   @default("")
+  icon            String   @default("")
+  order           Int      @default(0)
+  parentCategory  String?
+  metaTitle       String   @default("")
+  metaDescription String   @db.Text
+  blogCount       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BlogPost {
+  id               String    @id @default(cuid()) @map("_id")
+  title            String
+  slug             String    @unique
+  shortDescription String    @db.Text
+  content          String    @db.LongText
+  image            String
+  author           Json
+  category         String
+  tags             Json
+  featured         Boolean   @default(false)
+  trending         Boolean   @default(false)
+  status           String    @default("draft")
+  available        Boolean   @default(true)
+  publishedAt      DateTime?
+  readTime         Int?
+  likes            Json
+  views            Int       @default(0)
+  comments         Json
+  commentsEnabled  Boolean   @default(true)
+  metaTitle        String?
+  metaDescription  String?   @db.Text
+  metaKeywords     Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Cart {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  items     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id              String   @id @default(cuid()) @map("_id")
+  name            String   @unique
+  slug            String   @unique
+  description     String   @db.Text
+  isActive        Boolean  @default(true)
+  image           String   @default("")
+  icon            String   @default("")
+  order           Int      @default(0)
+  parentCategory  String?
+  metaTitle       String   @default("")
+  metaDescription String   @db.Text
+  productCount    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Contact {
+  id          String    @id @default(cuid()) @map("_id")
+  name        String
+  email       String
+  subject     String
+  message     String    @db.Text
+  inquiryType String    @default("general")
+  status      String    @default("new")
+  ipAddress   String    @default("")
+  userAgent   String    @default("")
+  createdAt   DateTime  @default(now())
+  repliedAt   DateTime?
+}
+
+model Newsletter {
+  id                 String    @id @default(cuid()) @map("_id")
+  email              String    @unique
+  name               String    @default("")
+  status             String    @default("pending")
+  subscriptionSource String    @default("website")
+  preferences        Json
+  ipAddress          String    @default("")
+  userAgent          String    @default("")
+  subscribedAt       DateTime  @default(now())
+  lastEmailSent      DateTime?
+  unsubscribedAt     DateTime?
+  emailVerified      Boolean   @default(false)
+  verificationToken  String?
+}
+
+model Notification {
+  id        String   @id @default(cuid()) @map("_id")
+  type      String
+  title     String
+  message   String?  @db.Text
+  severity  String   @default("info")
+  actor     Json
+  target    Json?
+  audience  Json?
+  readBy    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id                    String   @id @default(cuid()) @map("_id")
+  userId                String
+  orderId               String   @unique
+  stripePaymentIntentId String   @default("")
+  items                 Json
+  shippingAddress       Json
+  billingAddress        Json
+  amount                Json
+  status                String   @default("pending")
+  paymentStatus         String   @default("pending")
+  paymentMethod         String   @default("stripe")
+  paymentMeta           Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Product {
+  dbId                String    @id @default(cuid()) @map("_id")
+  id                  Int       @unique
+  name                String
+  category            String
+  brand               String    @default("")
+  sku                 String    @default("")
+  description         String    @db.Text
+  short_description   String    @db.Text
+  image               String
+  images              Json
+  new_price           Float
+  old_price           Float
+  discount_type       String    @default("percentage")
+  discount_value      Float     @default(0)
+  sale_start_date     DateTime?
+  sale_end_date       DateTime?
+  features            Json
+  specifications      Json
+  materials           String    @default("")
+  care_instructions   String    @db.Text
+  size_chart          String    @default("")
+  colors              Json
+  sizes               Json
+  weight              Float     @default(0)
+  dimensions          Json
+  stock_quantity      Int       @default(0)
+  low_stock_threshold Int       @default(10)
+  meta_title          String    @default("")
+  meta_description    String    @db.Text
+  meta_keywords       String    @default("")
+  slug                String    @default("")
+  tags                Json
+  related_products    Json
+  shipping_class      String    @default("standard")
+  status              String    @default("draft")
+  date                DateTime  @default(now())
+  available           Boolean   @default(true)
+  featured            Boolean   @default(false)
+  allowReviews        Boolean   @default(true)
+  views               Int       @default(0)
+  sales_count         Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model ProductReview {
+  id                 String   @id @default(cuid()) @map("_id")
+  productId          Int
+  userId             String
+  userName           String
+  userEmail          String   @default("")
+  userAvatar         String   @default("")
+  rating             Int
+  title              String   @default("")
+  comment            String   @db.Text
+  isVerifiedPurchase Boolean  @default(false)
+  status             String   @default("published")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([productId, userId])
+}
+
+model PromoCode {
+  id                   String   @id @default(cuid()) @map("_id")
+  code                 String   @unique
+  title                String
+  description          String   @db.Text
+  discountType         String   @default("percentage")
+  discountValue        Float
+  minPurchaseAmount    Float    @default(0)
+  maxDiscountAmount    Float?
+  usageLimit           Int?
+  usageCount           Int      @default(0)
+  usagePerUser         Int      @default(1)
+  validFrom            DateTime
+  validUntil           DateTime
+  isActive             Boolean  @default(true)
+  applicableCategories Json
+  excludedProducts     Json
+  userRestrictions     Json
+  usedBy               Json
+  createdBy            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Role {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String   @unique
+  permissions Json
+  description String?
+  active      Boolean  @default(true)
+  protected   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Sale {
+  id           String   @id @default(cuid()) @map("_id")
+  product_id   Int
+  product_name String
+  category     String
+  price        Float
+  quantity     Int      @default(1)
+  total_amount Float
+  date         DateTime @default(now())
+  month        Int
+  year         Int
+}
+
+model Settings {
+  id                 String   @id @default(cuid()) @map("_id")
+  generalSettings    Json
+  contact            Json
+  email              Json
+  allowGuestCheckout Boolean  @default(true)
+  themeSettings      Json
+  paymentSettings    Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model StaffUser {
+  id           String   @id @default(cuid()) @map("_id")
+  email        String   @unique
+  password     String?
+  role         String
+  isProtected  Boolean  @default(false)
+  tokenVersion Int      @default(0)
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model User {
+  id                   String    @id @default(cuid()) @map("_id")
+  name                 String
+  email                String    @unique
+  password             String
+  avatar               String    @default("")
+  address              String    @db.Text
+  role                 String    @default("user")
+  emailVerified        Boolean   @default(false)
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime  @default(now())
+  lastLogin            DateTime  @default(now())
+  googleId             String?
+  facebookId           String?
+  authProvider         String    @default("local")
+}
+
+model Wishlist {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  items     Json
+  updatedAt DateTime @default(now())
+}
