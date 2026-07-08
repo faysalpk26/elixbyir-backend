@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const User = require('../models/userModel');
+const prisma = require('../utils/prismaClient');
 
 // Serialize user
 passport.serializeUser((user, done) => {
@@ -11,7 +11,7 @@ passport.serializeUser((user, done) => {
 // Deserialize user
 passport.deserializeUser(async (id, done) => {
     try {
-        const user = await User.findById(id);
+        const user = await prisma.user.findUnique({ where: { id } });
         done(null, user);
     } catch (err) {
         done(err, null);
@@ -26,28 +26,36 @@ passport.use(new GoogleStrategy({
     scope: ['profile', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        let user = await User.findOne({ 
-            $or: [
-                { googleId: profile.id },
-                { email: profile.emails[0].value }
-            ]
+        let user = await prisma.user.findFirst({ 
+            where: {
+                OR: [
+                    { googleId: profile.id },
+                    { email: profile.emails[0].value }
+                ]
+            }
         });
 
         if (user) {
             if (!user.googleId) {
-                user.googleId = profile.id;
-                await user.save();
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { googleId: profile.id, authProvider: 'google' }
+                });
             }
             return done(null, user);
         }
 
-        user = await User.create({
-            name: profile.displayName,
-            email: profile.emails[0].value,
-            googleId: profile.id,
-            password: 'google-oauth-' + Math.random().toString(36),
-            isEmailVerified: true,
-            cartData: {}
+        user = await prisma.user.create({
+            data: {
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                googleId: profile.id,
+                password: 'google-oauth-' + Math.random().toString(36),
+                emailVerified: true,
+                authProvider: 'google',
+                address: '',
+                avatar: profile.photos?.[0]?.value || ''
+            }
         });
 
         done(null, user);
@@ -64,28 +72,36 @@ passport.use(new FacebookStrategy({
     profileFields: ['id', 'displayName', 'emails', 'photos']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        let user = await User.findOne({ 
-            $or: [
-                { facebookId: profile.id },
-                { email: profile.emails?.[0]?.value }
-            ]
+        let user = await prisma.user.findFirst({ 
+            where: {
+                OR: [
+                    { facebookId: profile.id },
+                    { email: profile.emails?.[0]?.value || `${profile.id}@facebook.com` }
+                ]
+            }
         });
 
         if (user) {
             if (!user.facebookId) {
-                user.facebookId = profile.id;
-                await user.save();
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { facebookId: profile.id, authProvider: 'facebook' }
+                });
             }
             return done(null, user);
         }
 
-        user = await User.create({
-            name: profile.displayName,
-            email: profile.emails?.[0]?.value || `${profile.id}@facebook.com`,
-            facebookId: profile.id,
-            password: 'facebook-oauth-' + Math.random().toString(36),
-            isEmailVerified: true,
-            cartData: {}
+        user = await prisma.user.create({
+            data: {
+                name: profile.displayName,
+                email: profile.emails?.[0]?.value || `${profile.id}@facebook.com`,
+                facebookId: profile.id,
+                password: 'facebook-oauth-' + Math.random().toString(36),
+                emailVerified: true,
+                authProvider: 'facebook',
+                address: '',
+                avatar: profile.photos?.[0]?.value || ''
+            }
         });
 
         done(null, user);

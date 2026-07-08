@@ -5,7 +5,7 @@ const getUsersWishlist = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    let wishlist = await prisma.wishlist.findFirst({ where: { userId } });
 
     if (!wishlist) {
       // Create empty wishlist if none exists
@@ -103,7 +103,7 @@ const addItemToWishlist = async (req, res) => {
     }
 
     // Find or create wishlist
-    let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    let wishlist = await prisma.wishlist.findFirst({ where: { userId } });
     if (!wishlist) {
       wishlist = await prisma.wishlist.create({
         data: { userId, items: [] }
@@ -169,7 +169,7 @@ const removeItemFromWishlist = async (req, res) => {
       });
     }
 
-    const wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId } });
     if (!wishlist) {
       return res.status(404).json({
         success: false,
@@ -216,7 +216,7 @@ const clearEntireWishlist = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId } });
     if (!wishlist) {
       return res.status(404).json({
         success: false,
@@ -248,7 +248,7 @@ const checkIfItemIsInWishlist = async (req, res) => {
   try {
     const { userId, productId } = req.params;
 
-    const wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId } });
 
     if (!wishlist) {
       return res.json({
@@ -281,7 +281,7 @@ const getWishlistSummary = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId } });
 
     if (!wishlist) {
       return res.json({
@@ -319,7 +319,7 @@ const syncWishlist = async (req, res) => {
     }
 
     // Find or create wishlist
-    let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    let wishlist = await prisma.wishlist.findFirst({ where: { userId } });
     if (!wishlist) {
       wishlist = await prisma.wishlist.create({
         data: { userId, items: [] }
@@ -386,7 +386,7 @@ const moveItemsFromWishlistToCart = async (req, res) => {
       });
     }
 
-    const wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId } });
     if (!wishlist) {
       return res.status(404).json({
         success: false,
